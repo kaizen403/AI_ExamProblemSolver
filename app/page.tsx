@@ -1,5 +1,3 @@
-import UploadCard from "@/components/UploadCard";
-
 export default function Home() {
   return (
     <section className="w-full h-full py-20 md:py-24 lg:py-32 xl:py-48 bg-black">
@@ -16,7 +14,6 @@ export default function Home() {
               </p>
             </div>
             <div className="w-full space-y-2 mx-auto">
-              <UploadCard />
               <p className="text-xs text-zinc-200 dark:text-zinc-100">
                 Get ready to be the next topper of your class : D
               </p>
