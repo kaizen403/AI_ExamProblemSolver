@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         content: [
           {
             type: "text",
-            text: "solve all the questions step by step and explain in a detailed way?",
+            text: "solve all the questions step by step and explain in a detailed way? if it does not look like a question or If you find any image uploaded which doesnt look like question then just tell the user to upload a proper question.",
           },
           {
             type: "image_url",
