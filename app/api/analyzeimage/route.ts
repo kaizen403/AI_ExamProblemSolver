@@ -4,7 +4,7 @@ import { OpenAIStream, StreamingTextResponse } from "ai";
 export const runtime = "edge";
 
 const configuration = new Configuration({
-  apiKey: "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",
+  apiKey: "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",
 });
 
 const openai = new OpenAIApi(configuration);
