@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChangeEvent, FormEvent, useState } from "react";
+import React from "react";
 
 interface UploadCloudIconProps {
   className?: string;
@@ -17,6 +18,7 @@ interface UploadCloudIconProps {
 export default function Component() {
   const [image, setImage] = useState<string>("");
   const [openAIResponse, setOpenAIResponse] = useState<string>("");
+  const [isdone, setIsdone] = useState(true);
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     if (event.target.files === null) {
@@ -47,7 +49,6 @@ export default function Component() {
       return;
     }
 
-    // POST api/analyzeImage
     await fetch("api/analyzeimage", {
       method: "POST",
       headers: {
@@ -57,16 +58,14 @@ export default function Component() {
         image: image, // base64 image
       }),
     }).then(async (response: any) => {
-      // Because we are getting a streaming text response
-      // we have to make some logic to handle the streaming text
       const reader = response.body?.getReader();
       setOpenAIResponse("");
-      // reader allows us to read a new piece of info on each "read"
-      // "Hello" + "I am" + "Cooper Codes"  reader.read();
+      setIsdone(false);
+
       while (true) {
         const { done, value } = await reader?.read();
-        // done is true once the response is done
         if (done) {
+          setIsdone(true);
           break;
         }
 
@@ -121,16 +120,19 @@ export default function Component() {
                 </div>
                 <Button
                   type="submit"
-                  className="mt-6 px-8 py-2 border text-sm font-semibold text-white bg-black rounded-full"
+                  className={`mt-6 px-8 py-2 border text-sm font-semibold text-white bg-black rounded-full ${
+                    !isdone && "opacity-50 cursor-not-allowed"
+                  }`}
+                  disabled={!isdone}
                 >
-                  Upload File
+                  {isdone === false ? "Select a file" : "Upload"}
                 </Button>
               </form>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="w-full max-w-md mx-auto mt-10 bg-black rounded-lg overflow-hidden shadow-lg">
+        <Card className="w-full max-w-2xl mx-auto mt-10 bg-black rounded-lg overflow-hidden shadow-lg">
           <CardContent className="p-8 text-center">
             <CardTitle className="text-2xl font-semibold text-white mb-2">
               Solution
@@ -140,7 +142,14 @@ export default function Component() {
                 <h2 className="text-xl font-bold text-white mb-2">
                   AI Response
                 </h2>
-                <p className="text-white">{openAIResponse}</p>
+                <div className="text-white">
+                  {openAIResponse.split("\n").map((line, index) => (
+                    <React.Fragment key={index}>
+                      {line}
+                      <br />
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
             ) : null}
           </CardContent>
