@@ -79,7 +79,7 @@ export default function Component() {
   return (
     <div className="flex justify-center items-center w-full h-full">
       <div className=" flex-col">
-        <Card className="w-full max-w-md mx-auto mt-10 bg-black rounded-lg overflow-hidden shadow-lg">
+        <Card className="w-full max-w-md mx-auto mt-10 bg-black rounded-lg border-slate-300 overflow-hidden shadow-lg">
           <CardContent className="p-8 text-center">
             <UploadCloudIcon className="w-12 h-12 mx-auto mb-4 text-gray-500" />
             <CardTitle className="text-2xl font-semibold text-white mb-2">
@@ -104,7 +104,7 @@ export default function Component() {
                     Choose File
                   </Label>
                   {image !== "" ? (
-                    <div className="mb-4 mt-10 border overflow-hidden">
+                    <div className="mb-4 mt-10 border border-slate-300 overflow-hidden">
                       <img
                         src={image}
                         className="w-full object-contain max-h-72"
@@ -132,7 +132,7 @@ export default function Component() {
           </CardContent>
         </Card>
 
-        <Card className="w-full max-w-2xl mx-auto mt-10 bg-black rounded-lg overflow-hidden shadow-lg">
+        <Card className="w-full max-w-2xl mx-auto mt-10 bg-black border-slate-300 rounded-lg overflow-hidden shadow-lg">
           <CardContent className="p-8 text-center">
             <CardTitle className="text-2xl font-semibold text-white mb-2">
               Solution
