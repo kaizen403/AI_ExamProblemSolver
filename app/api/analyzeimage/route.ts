@@ -20,15 +20,13 @@ export async function POST(request: Request) {
     stream: true,
     max_tokens: 4096, // No max tokens: super short / cut off response.
     messages: [
-      // GPT-4 with Vision is JUST GPT-4. So you can still talk with it like GPT-4
-      // There is no "system" message (THIS MAY CHANGE)
       {
         role: "user",
         //@ts-ignore
         content: [
           {
             type: "text",
-            text: "solve all the questions step by step and explain in a detailed way? if it does not look like a question or If you find any image uploaded which doesnt look like question then just tell the user to upload a proper question.",
+            text: "solve all the questions step by step until the end with the right answer and best approach. if it does not look like a question or If you find any image uploaded which doesnt look like question then just tell the user to upload a proper question.",
           },
           {
             type: "image_url",

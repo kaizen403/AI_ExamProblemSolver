@@ -1,5 +1,7 @@
+"use client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { signIn } from "next-auth/react";
 export default function RegSheet() {
   const GoogleSvg = () => (
     <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -53,7 +55,10 @@ export default function RegSheet() {
           <Button className="bg-white text-black">Signup</Button>
           <p className="text-center">or</p>
 
-          <Button className="bg-white text-black flex items-center justify-center space-x-2">
+          <Button
+            onClick={() => signIn("google")}
+            className="bg-white text-black flex items-center justify-center space-x-2"
+          >
             <GoogleSvg />
             <span>Signin with Google</span>
           </Button>

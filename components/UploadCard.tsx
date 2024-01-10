@@ -7,18 +7,27 @@ import {
   Card,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
-import { ChangeEvent, FormEvent, useState } from "react";
-import React from "react";
+import React, { ChangeEvent, FormEvent, useState } from "react";
+
+import { InlineMath, BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 interface UploadCloudIconProps {
   className?: string;
 }
-export default function Component() {
+type TextBlock = { type: "text"; value: string };
+type LaTeXBlock = { type: "latex"; value: string };
+type ResponseBlock = TextBlock | LaTeXBlock;
+export default function UploadCard() {
   const [image, setImage] = useState<string>("");
   const [openAIResponse, setOpenAIResponse] = useState<string>("");
   const [isdone, setIsdone] = useState(true);
+  // function isMathExpression(line: string): boolean {
+  //   // Example using LaTeX delimiters
+  //   return line.includes("$$") || line.includes("\\(") || line.includes("\\[");
+  // }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     if (event.target.files === null) {
@@ -75,7 +84,52 @@ export default function Component() {
       }
     });
   }
+  function extractLaTeXBlocks(text: string): ResponseBlock[] {
+    const latexRegex = /(\$\$|\\\[).*?(\$\$|\\\])/gs;
+    let result: ResponseBlock[] = [];
+    let lastIndex = 0;
 
+    text.replace(latexRegex, (match, _startTag, _endTag, offset) => {
+      if (offset > lastIndex) {
+        const textBlock = text.substring(lastIndex, offset);
+        textBlock.split("\n").forEach((line) => {
+          if (line) {
+            result.push({ type: "text", value: line });
+          }
+          // Add a special marker for new lines
+          result.push({ type: "text", value: "\n" });
+        });
+      }
+      result.push({ type: "latex", value: match });
+      lastIndex = offset + match.length;
+      return match;
+    });
+
+    // Process remaining text after the last LaTeX block
+    const remainingText = text.substring(lastIndex);
+    remainingText.split("\n").forEach((line) => {
+      if (line) {
+        result.push({ type: "text", value: line });
+      }
+      result.push({ type: "text", value: "\n" });
+    });
+
+    return result;
+  }
+
+  const processResponse = (responseText: string): JSX.Element[] => {
+    const blocks = extractLaTeXBlocks(responseText);
+    return blocks.map((block, index) =>
+      block.type === "latex" ? (
+        <BlockMath key={`block-${index}`} math={block.value} />
+      ) : // Render new lines as line breaks
+      block.value === "\n" ? (
+        <br key={`newline-${index}`} />
+      ) : (
+        <span key={`text-${index}`}>{block.value}</span>
+      )
+    );
+  };
   return (
     <div className="flex justify-center items-center w-full h-full">
       <div className=" flex-col">
@@ -99,7 +153,7 @@ export default function Component() {
                   />
                   <Label
                     htmlFor="file"
-                    className="px-8 py-3 border  font-semibold hover:bg-gray-900 text-white bg-black rounded-full cursor-pointer"
+                    className="px-8 py-3 border border-slate-300 font-semibold hover:bg-gray-900 text-white bg-black rounded-full cursor-pointer"
                   >
                     Choose File
                   </Label>
@@ -120,7 +174,7 @@ export default function Component() {
                 </div>
                 <Button
                   type="submit"
-                  className={`mt-6 px-8 py-2 border text-sm font-semibold text-white bg-black rounded-full ${
+                  className={`mt-6 px-8 py-2 border border-slate-300 text-sm font-semibold text-white bg-black rounded-full ${
                     !isdone && "opacity-50 cursor-not-allowed"
                   }`}
                   disabled={!isdone}
@@ -137,21 +191,16 @@ export default function Component() {
             <CardTitle className="text-2xl font-semibold text-white mb-2">
               Solution
             </CardTitle>
-            {openAIResponse !== "" ? (
+            {openAIResponse && (
               <div className="border-t border-gray-300 pt-4">
                 <h2 className="text-xl font-bold text-white mb-2">
                   AI Response
                 </h2>
-                <div className="text-white">
-                  {openAIResponse.split("\n").map((line, index) => (
-                    <React.Fragment key={index}>
-                      {line}
-                      <br />
-                    </React.Fragment>
-                  ))}
+                <div className="text-white prose">
+                  {processResponse(openAIResponse)}
                 </div>
               </div>
-            ) : null}
+            )}
           </CardContent>
         </Card>
       </div>

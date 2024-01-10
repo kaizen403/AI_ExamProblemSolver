@@ -9,11 +9,23 @@ export default function Home() {
           <div className="flex flex-col justify-center space-y-4 text-center">
             <div className="space-y-4">
               <h1 className="text-4xl font-bold tracking-tighter wider sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500">
-                AI Exam Solver: Your Smart Study Companion
+                KazAI: Your Smart Study Companion
               </h1>
+              <p className="max-w-[600px] text-zinc-200 md:text-xl dark:text-zinc-100 mx-auto">
+                (Beta Version )
+              </p>
               <p className="max-w-[600px] text-zinc-200 md:text-xl dark:text-zinc-100 mx-auto">
                 Got a Problem? Just Upload and Watch AI Work Its Magic: Easy,
                 Fast, Student-Approved
+              </p>
+              <p className="max-w-[600px] text-zinc-200 text-xs mx-auto">
+                made with 🧡 by{" "}
+                <Link
+                  href="https://syncline.com/"
+                  className="text-blue-500 hover:text-blue-300 underline font-bold"
+                >
+                  Rishi Vhavle
+                </Link>
               </p>
             </div>
             <div className="w-full space-y-2 mx-auto">
@@ -22,15 +34,6 @@ export default function Home() {
                 Get ready to be the next topper of your class : D
               </p>
             </div>
-            <p className="max-w-[600px] text-zinc-200 text-xs mx-auto">
-              made with 🧡 by{" "}
-              <Link
-                href="https://syncline.com/"
-                className="text-blue-500 hover:text-blue-300 underline font-bold"
-              >
-                Rishi Vhavle
-              </Link>
-            </p>
           </div>
         </div>
       </div>
