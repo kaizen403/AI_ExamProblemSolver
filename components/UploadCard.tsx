@@ -11,8 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import React, { ChangeEvent, FormEvent, useState } from "react";
 
-import { InlineMath, BlockMath } from "react-katex";
-import "katex/dist/katex.min.css";
+import { MathJax, MathJaxContext } from "better-react-mathjax";
+
+const config = {
+  loader: { load: ["input/asciimath", "output/svg"] },
+  tex: {
+    inlineMath: [["\\(", "\\)"]], // Add this line to your existing config
+  },
+};
 
 interface UploadCloudIconProps {
   className?: string;
@@ -116,95 +122,148 @@ export default function UploadCard() {
 
     return result;
   }
+  const sanitizeLaTeX = (latex: string): string => {
+    // Fix common LaTeX formatting issues
+
+    // Replace "fracfrac" with "frac"
+    latex = latex.replace(/fracfrac/g, "frac");
+
+    // Ensure that there are braces {} around each \frac numerator and denominator
+    latex = latex.replace(
+      /\\frac\s*{?([^{}]+)}?\s*{?([^{}]+)}?/g,
+      "\\frac{$1}{$2}"
+    );
+
+    // Replace incorrect "e " with the exponential constant "e^"
+    latex = latex.replace(/e\s+/g, "e^");
+
+    // Add any additional specific replacements needed
+    // ...
+
+    return latex;
+  };
 
   const processResponse = (responseText: string): JSX.Element[] => {
     const blocks = extractLaTeXBlocks(responseText);
-    return blocks.map((block, index) =>
-      block.type === "latex" ? (
-        <BlockMath key={`block-${index}`} math={block.value} />
-      ) : // Render new lines as line breaks
-      block.value === "\n" ? (
-        <br key={`newline-${index}`} />
-      ) : (
-        <span key={`text-${index}`}>{block.value}</span>
-      )
-    );
+    return blocks.map((block, index) => {
+      if (block.type === "latex") {
+        // Sanitize and fix the LaTeX string
+        let sanitizedLaTeX = sanitizeLaTeX(block.value);
+        sanitizedLaTeX = fixSuperscriptAndSubscript(sanitizedLaTeX);
+        return (
+          <MathJax key={`block-${index}`} dynamic>
+            {sanitizedLaTeX}
+          </MathJax>
+        );
+      } else if (block.value === "\n") {
+        return <br key={`newline-${index}`} />;
+      } else {
+        return <span key={`text-${index}`}>{block.value}</span>;
+      }
+    });
   };
-  return (
-    <div className="flex justify-center items-center w-full h-full">
-      <div className=" flex-col">
-        <Card className="w-full max-w-md mx-auto mt-10 bg-black rounded-lg border-slate-300 overflow-hidden shadow-lg">
-          <CardContent className="p-8 text-center">
-            <UploadCloudIcon className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-            <CardTitle className="text-2xl font-semibold text-white mb-2">
-              Upload Your Problem
-            </CardTitle>
-            <CardDescription className="text-gray-400 mb-4">
-              Please select a file from your device
-            </CardDescription>
-            <div className="flex items-center justify-center mt-4">
-              <form onSubmit={(e) => handleOnSubmit(e)}>
-                <div className="relative my-4">
-                  <input
-                    type="file"
-                    id="file"
-                    className="hidden"
-                    onChange={(e) => handleFileChange(e)}
-                  />
-                  <Label
-                    htmlFor="file"
-                    className="px-8 py-3 border border-slate-300 font-semibold hover:bg-gray-900 text-white bg-black rounded-full cursor-pointer"
-                  >
-                    Choose File
-                  </Label>
-                  {image !== "" ? (
-                    <div className="mb-4 mt-10 border border-slate-300 overflow-hidden">
-                      <img
-                        src={image}
-                        className="w-full object-contain max-h-72"
-                      />
-                    </div>
-                  ) : (
-                    <div className="mb-4 p-8 text-center">
-                      <p className="text-white">
-                        Once you upload an image, you will see it here.
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <Button
-                  type="submit"
-                  className={`mt-6 px-8 py-2 border border-slate-300 text-sm font-semibold text-white bg-black rounded-full ${
-                    !isdone && "opacity-50 cursor-not-allowed"
-                  }`}
-                  disabled={!isdone}
-                >
-                  {isdone === false ? "Select a file" : "Upload"}
-                </Button>
-              </form>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="w-full max-w-2xl mx-auto mt-10 bg-black border-slate-300 rounded-lg overflow-hidden shadow-lg">
-          <CardContent className="p-8 text-center">
-            <CardTitle className="text-2xl font-semibold text-white mb-2">
-              Solution
-            </CardTitle>
-            {openAIResponse && (
-              <div className="border-t border-gray-300 pt-4">
-                <h2 className="text-xl font-bold text-white mb-2">
-                  AI Response
-                </h2>
-                <div className="text-white prose">
-                  {processResponse(openAIResponse)}
-                </div>
+  function fixSuperscriptAndSubscript(latex: string): string {
+    // Regex to find superscript and subscript without proper arguments
+    const regex = /(\^|_)(?!\{)/g;
+
+    // Replace with the proper LaTeX command by adding empty braces if needed
+    latex = latex.replace(regex, "$1{}");
+
+    // Handle cases where the ^ or _ is followed by a space or a non-alphanumeric character
+    // which should be enclosed in curly braces
+    latex = latex.replace(/(\^|_)\s/g, "$1{ }");
+    latex = latex.replace(/(\^|_)(\W)/g, "$1{$2}");
+
+    // Note: This is a simple fix and may not cover all edge cases.
+    // Complex mathematical expressions might need a more robust solution.
+
+    return latex;
+  }
+
+  // // Implement a function to clean up LaTeX strings
+  // function cleanLaTeXString(latex: string): string {
+  //   // Example: Replace double backslashes with single backslashes
+  //   return latex.replace(/\\\\/g, "\\");
+  // }
+
+  return (
+    <MathJaxContext config={config}>
+      <div className="flex justify-center items-center w-full h-full">
+        <div className=" flex-col">
+          <Card className="w-full max-w-md mx-auto mt-10 bg-black rounded-lg border-slate-300 overflow-hidden shadow-lg">
+            <CardContent className="p-8 text-center">
+              <UploadCloudIcon className="w-12 h-12 mx-auto mb-4 text-gray-500" />
+              <CardTitle className="text-2xl font-semibold text-white mb-2">
+                Upload Your Problem
+              </CardTitle>
+              <CardDescription className="text-gray-400 mb-4">
+                Please select a file from your device
+              </CardDescription>
+              <div className="flex items-center justify-center mt-4">
+                <form onSubmit={(e) => handleOnSubmit(e)}>
+                  <div className="relative my-4">
+                    <input
+                      type="file"
+                      id="file"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e)}
+                    />
+                    <Label
+                      htmlFor="file"
+                      className="px-8 py-3 border border-slate-300 font-semibold hover:bg-gray-900 text-white bg-black rounded-full cursor-pointer"
+                    >
+                      Choose File
+                    </Label>
+                    {image !== "" ? (
+                      <div className="mb-4 mt-10 border border-slate-300 overflow-hidden">
+                        <img
+                          src={image}
+                          className="w-full object-contain max-h-72"
+                        />
+                      </div>
+                    ) : (
+                      <div className="mb-4 p-8 text-center">
+                        <p className="text-white">
+                          Once you upload an image, you will see it here.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    type="submit"
+                    className={`mt-6 px-8 py-2 border border-slate-300 text-sm font-semibold text-white bg-black rounded-full ${
+                      !isdone && "opacity-50 cursor-not-allowed"
+                    }`}
+                    disabled={!isdone}
+                  >
+                    {isdone === false ? "Select a file" : "Upload"}
+                  </Button>
+                </form>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <Card className="w-full max-w-2xl mx-auto mt-10 bg-black border-slate-300 rounded-lg overflow-hidden shadow-lg">
+            <CardContent className="p-8 text-center">
+              <CardTitle className="text-2xl font-semibold text-white mb-2">
+                Solution
+              </CardTitle>
+              {openAIResponse && (
+                <div className="border-t border-gray-300 pt-4">
+                  <h2 className="text-xl font-bold text-white mb-2">
+                    AI Response
+                  </h2>
+                  <div className="text-white prose">
+                    {processResponse(openAIResponse)}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </MathJaxContext>
   );
 }
 function UploadCloudIcon({ className, ...rest }: UploadCloudIconProps) {

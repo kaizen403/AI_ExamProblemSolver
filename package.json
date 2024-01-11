@@ -17,6 +17,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@uploadthing/react": "^6.0.2",
     "ai": "^2.2.30",
+    "better-react-mathjax": "^2.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "framer-motion": "^10.17.8",
