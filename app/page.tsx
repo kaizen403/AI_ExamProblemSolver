@@ -1,7 +1,11 @@
+/* eslint-disable react/no-unescaped-entities */
 import UploadCard from "@/components/UploadCard";
 import Link from "next/link";
-
-export default function Home() {
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
   return (
     <section className="w-full h-full py-20 md:py-24 lg:py-32 xl:py-48 bg-black">
       <div className="container px-4 md:px-6">
@@ -11,6 +15,7 @@ export default function Home() {
               <h1 className="text-4xl font-bold tracking-tighter wider sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500">
                 KazAI: Your Smart Study Companion
               </h1>
+
               <p className="max-w-[600px] text-zinc-200 md:text-xl dark:text-zinc-100 mx-auto">
                 (Beta Version )
               </p>

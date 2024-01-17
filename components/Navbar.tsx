@@ -1,13 +1,22 @@
+"use client";
+import { useSession, signOut } from "next-auth/react";
 import {
   Navbar,
   NavbarBrand,
   NavbarContent,
   NavbarItem,
 } from "@nextui-org/navbar";
-import { Button } from "@nextui-org/react";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { LoginSheet } from "./LoginSheet";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 export default function Nav() {
+  const { data: session } = useSession();
+  const user = session?.user;
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+  };
+
   return (
     <Navbar className="bg-black">
       <NavbarBrand>
@@ -31,12 +40,36 @@ export default function Nav() {
         </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="#">Login</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <LoginSheet />
-        </NavbarItem>
+        {!session && (
+          <>
+            <NavbarItem className="hidden lg:flex">
+              <Link href="/login" passHref>
+                <Button variant="outline">Login</Button>
+              </Link>
+            </NavbarItem>
+            <NavbarItem className="hidden lg:flex">
+              <Link href="/register" passHref>
+                <Button variant="outline">Create an Account</Button>
+              </Link>
+            </NavbarItem>
+          </>
+        )}
+        {session && (
+          <NavbarItem className="hidden lg:flex items-center gap-2">
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt={user?.name ?? "User"}
+                className="rounded-full w-8 h-8"
+              />
+            ) : (
+              <span>Welcome {user?.name ?? "Unknown User"}</span>
+            )}
+            <Button variant="outline" onClick={handleSignOut}>
+              Sign Out
+            </Button>
+          </NavbarItem>
+        )}
       </NavbarContent>
     </Navbar>
   );
