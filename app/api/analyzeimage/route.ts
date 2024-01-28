@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         content: [
           {
             type: "text",
-            text: "solve all the questions step by step until the end with the right answer and best approach. if it does not look like a question or If you find any image uploaded which doesnt look like question then just tell the user to upload a proper question.",
+            text: "solve all the questions step by step until the end with the right answer and best approach. if it does not look like a question or If you find any image uploaded which doesnt look like question then just tell the user to upload a proper question. if it looks like a VIT-AP question paper then solve every question with their right solutions.",
           },
           {
             type: "image_url",
